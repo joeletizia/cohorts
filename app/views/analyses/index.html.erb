@@ -1,0 +1,38 @@
+<% weekly_segments = get_weekly_segments_for_headers(cohorts) %>
+
+<div class="container">
+  <div class="row" style="overflow-x:auto;">
+    <table class="table" >
+      <thead>
+        <tr>
+          <th scope="col">Cohort</th>
+          <th scope="col">Users</th>
+          <% weekly_segments.each do |segment| %>
+            <th scope="col">
+              <%= segment.strftime("%D") %>
+            </th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% cohorts.each do |cohort| %>
+          <tr scope="row">
+            <td><%= cohort.start_date.strftime("%D") %></td>
+            <td><%= cohort.total_user_count.to_s + " users" %></td>
+            <% weekly_segments.each do |segment| %>
+              <% presenter = ::Presenters::WeeklyAnalysisPresenter.new(segment, cohort) %>
+              <td>
+                <% if presenter.has_data_for_this_segment? %>
+                  <div> <%= presenter.user_order_content %> </div>
+                  <div> <%= presenter.user_first_order_content %> </div>
+                <% else %>
+                  <div>NA</div>
+                <% end %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

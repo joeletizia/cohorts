@@ -1,97 +1,42 @@
 require "rails_helper"
 
 describe Presenters::WeeklyAnalysisPresenter do
-  describe "#has_data_for_this_segment?" do
-    context 'when the weekly analysis does not have data for the given segment' do
-      let(:segment) { Date.today }
-      let(:analyses) { [double(start_date: segment + 7.days)] }
+  describe "#weekly_data" do
+    context 'when there are more segments to display than the cohort has weeks' do
+      it 'returns a collection contianing nil' do
+        segments = [1,2]
+        cohort = double(total_user_count: 1, weekly_analyses: [double(user_order_count: 1, user_first_order_count: 1)])
+        presenter = Presenters::WeeklyAnalysisPresenter.new(cohort, segments)
 
-      it 'returns false' do
-        cohort = double(total_user_count: 3, weekly_analyses: analyses)
-        presenter = Presenters::WeeklyAnalysisPresenter.new(segment, cohort)
-
-        expect(presenter.has_data_for_this_segment?).to eq(false)
+        weekly_data = presenter.weekly_data
+        expect(weekly_data.count).to eq(segments.count)
+        expect(weekly_data.last).to eq(nil)
       end
     end
-    context 'when the weekly analysis does have data for the given segment' do
-      let(:segment) { Date.today }
-      let(:analyses) { [double(start_date: segment)] }
 
-      it 'returns true' do
-        cohort = double(total_user_count: 3, weekly_analyses: analyses)
-        presenter = Presenters::WeeklyAnalysisPresenter.new(segment, cohort)
+    context 'when there is weekly data to be displayed' do
+      it 'returns a collection contianing an object with string data to display' do
+        segments = [1,2]
+        cohort = double(total_user_count: 1, weekly_analyses: [double(user_order_count: 1, user_first_order_count: 1)])
+        presenter = Presenters::WeeklyAnalysisPresenter.new(cohort, segments)
 
-        expect(presenter.has_data_for_this_segment?).to eq(true)
-      end
-    end
-  end
-
-  describe "#user_order_content" do
-    context 'when the weekly analysis is nil' do
-      let(:segment) { Date.today }
-      let(:analyses) { [double(start_date: segment - 7.days)] }
-
-      it 'returns "NA"' do
-        cohort = double(total_user_count: 3, weekly_analyses: analyses)
-        presenter = Presenters::WeeklyAnalysisPresenter.new(segment, cohort)
-        expect(presenter.user_order_content).to eq("NA")
+        weekly_data = presenter.weekly_data
+        expect(weekly_data.count).to eq(segments.count)
+        expect(weekly_data.first.user_order_content).to eq("1 orderers. 100%")
+        expect(weekly_data.first.user_first_order_content).to eq("1 1st orderers. 100%")
       end
     end
 
     context 'when the total user count is 0' do
-      let(:segment) { Date.today }
-      let(:analyses) { [double(start_date: segment)] }
+      it 'returns a collection contianing an object with string data showing 0%' do
+        segments = [1,2]
+        cohort = double(total_user_count: 0, weekly_analyses: [double(user_order_count: 0, user_first_order_count: 0)])
+        presenter = Presenters::WeeklyAnalysisPresenter.new(cohort, segments)
 
-      it 'returns "0 orderers. 0%"' do
-        cohort = double(total_user_count: 0, weekly_analyses: analyses)
-        presenter = Presenters::WeeklyAnalysisPresenter.new(segment, cohort)
-        expect(presenter.user_order_content).to eq("0 orderers. 0%")
-      end
-    end
-
-    context 'when there is a matching analysis to the given segment' do
-      let(:segment) { Date.today }
-      let(:analyses) { [double(start_date: segment, user_order_count: 1)] }
-
-      it 'returns a string containing the number of unique orderers and the percentage against the total' do
-        cohort = double(total_user_count: 1, weekly_analyses: analyses)
-        presenter = Presenters::WeeklyAnalysisPresenter.new(segment, cohort)
-        expect(presenter.user_order_content).to eq("1 orderers. 100%")
-      end
-    end
-  end
-
-  describe "#user_first_order_content" do
-    context 'when the weekly analysis is nil' do
-      let(:segment) { Date.today }
-      let(:analyses) { [double(start_date: segment - 7.days)] }
-
-      it 'returns "NA"' do
-        cohort = double(total_user_count: 3, weekly_analyses: analyses)
-        presenter = Presenters::WeeklyAnalysisPresenter.new(segment, cohort)
-        expect(presenter.user_first_order_content).to eq("NA")
-      end
-    end
-
-    context 'when the total user count is 0' do
-      let(:segment) { Date.today }
-      let(:analyses) { [double(start_date: segment)] }
-
-      it 'returns "0 orderers. 0%"' do
-        cohort = double(total_user_count: 0, weekly_analyses: analyses)
-        presenter = Presenters::WeeklyAnalysisPresenter.new(segment, cohort)
-        expect(presenter.user_first_order_content).to eq("0 1st orderers. 0%")
-      end
-    end
-
-    context 'when there is a matching analysis to the given segment' do
-      let(:segment) { Date.today }
-      let(:analyses) { [double(start_date: segment, user_first_order_count: 1)] }
-
-      it 'returns a string containing the number of unique orderers and the percentage against the total' do
-        cohort = double(total_user_count: 1, weekly_analyses: analyses)
-        presenter = Presenters::WeeklyAnalysisPresenter.new(segment, cohort)
-        expect(presenter.user_first_order_content).to eq("1 1st orderers. 100%")
+        weekly_data = presenter.weekly_data
+        expect(weekly_data.count).to eq(segments.count)
+        expect(weekly_data.first.user_order_content).to eq("0 orderers. 0%")
+        expect(weekly_data.first.user_first_order_content).to eq("0 1st orderers. 0%")
       end
     end
   end

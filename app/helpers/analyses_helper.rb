@@ -8,6 +8,6 @@ module AnalysesHelper
       end
 
       acc.merge(weekly_starts)
-    end
+    end.to_a
   end
 end

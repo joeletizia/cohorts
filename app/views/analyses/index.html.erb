@@ -7,9 +7,9 @@
         <tr>
           <th scope="col">Cohort</th>
           <th scope="col">Users</th>
-          <% weekly_segments.each do |segment| %>
+          <% weekly_segments.each_with_index do |_, index| %>
             <th scope="col">
-              <%= segment.strftime("%D") %>
+              <%= 7*index %> - <%= (index*7) + 7 %> days
             </th>
           <% end %>
         </tr>
@@ -19,12 +19,12 @@
           <tr scope="row">
             <td><%= cohort.start_date.strftime("%D") %></td>
             <td><%= cohort.total_user_count.to_s + " users" %></td>
-            <% weekly_segments.each do |segment| %>
-              <% presenter = ::Presenters::WeeklyAnalysisPresenter.new(segment, cohort) %>
+            <% presenter = ::Presenters::WeeklyAnalysisPresenter.new(cohort, weekly_segments) %>
+            <% presenter.weekly_data.each do |weekly_datum| %>
               <td>
-                <% if presenter.has_data_for_this_segment? %>
-                  <div> <%= presenter.user_order_content %> </div>
-                  <div> <%= presenter.user_first_order_content %> </div>
+                <% if weekly_datum.present? %>
+                  <div> <%= weekly_datum.user_order_content %> </div>
+                  <div> <%= weekly_datum.user_first_order_content %> </div>
                 <% else %>
                   <div>NA</div>
                 <% end %>

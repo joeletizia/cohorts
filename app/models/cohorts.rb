@@ -30,7 +30,7 @@ module Cohorts
 
   def create_buckets_from_start_and_end_dates(start_date, end_date, buckets = [])
     if start_date > end_date
-      return buckets
+      return buckets.reverse
     end
 
     create_buckets_from_start_and_end_dates(start_date + 7.days, end_date, buckets << start_date)
